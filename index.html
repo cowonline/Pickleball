@@ -26,22 +26,23 @@
       transition: opacity .25s ease;
     }
     #splash.done { opacity: 0; pointer-events: none; }
-    #splash .name { font-size: 22px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
-    #splash .spin {
-      width: 28px; height: 28px; box-sizing: border-box; border-radius: 50%;
-      border: 3px solid rgba(29, 26, 21, .15); border-top-color: #D14B2C;
-      animation: spin .8s linear infinite;
-    }
+    #splash .ball { width: 132px; height: 132px; filter: drop-shadow(0 0 12px rgba(198, 240, 0, .6)); animation: spin 1.3s linear infinite; }
+    #splash .ball .fill { fill: #C6F000; }
+    #splash .ball .ring { fill: none; stroke: #2B2F36; stroke-width: 2.6; }
+    #splash .ball .sh { fill: #fff; }
+    #splash .ball .ho { fill: none; stroke: #2B2F36; stroke-width: 2.2; }
+    #splash .name { font-size: 22px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #2B2F36; }
+    #splash .name b { font-weight: 600; color: #9BC400; }
     #splash .hint { font-size: 14px; line-height: 1.4; text-align: center; max-width: 280px; min-height: 3em; opacity: 0; transition: opacity .3s ease; }
     #splash .hint.show { opacity: .7; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    @media (prefers-reduced-motion: reduce) { #splash .spin { animation: none; } }
+    @media (prefers-reduced-motion: reduce) { #splash .ball { animation: none; } }
   </style>
 </head>
 <body>
   <div id="splash" role="status" aria-live="polite">
-    <div class="name">Pickleball</div>
-    <div class="spin" aria-hidden="true"></div>
+    <svg class="ball" viewBox="-100 -100 200 200" aria-hidden="true"><circle class="fill" cx="6" cy="6" r="74"/><g><g transform="translate(-27.6 -59.3)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g><g transform="translate(19.9 -59.3)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g><g transform="translate(-4.1 -31.7)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g><g transform="translate(-62 -23.4)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g><g transform="translate(55.2 -23.4)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g><g transform="translate(-35.9 0)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g><g transform="translate(27.6 0)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g><g transform="translate(-63.4 22)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g><g transform="translate(56.6 22)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g><g transform="translate(-4.1 30.3)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g><g transform="translate(-27.6 59.3)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g><g transform="translate(19.3 59.3)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g></g><circle class="ring" r="80"/></svg>
+    <div class="name"><b>Pickle</b>ball</div>
     <div class="hint" id="hint">Still loading&hellip; the first open after a quiet spell can take a little longer.</div>
   </div>
   <!-- This page only exists to show the Apps Script app full-screen, which
