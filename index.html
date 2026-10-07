@@ -14,9 +14,36 @@
   <style>
     html, body { margin: 0; height: 100%; background: #F3ECDD; }
     iframe { display: block; border: 0; width: 100%; height: 100vh; height: 100dvh; }
+
+    /* Loading screen: shown over the app until the app says it has something to
+       show (Google takes several seconds to start it), so the wait doesn't look
+       like a blank, broken page. Same cream and ink as the app's own look. */
+    #splash {
+      position: fixed; inset: 0; z-index: 2;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+      background: #F3ECDD; color: #1D1A15;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      transition: opacity .25s ease;
+    }
+    #splash.done { opacity: 0; pointer-events: none; }
+    #splash .name { font-size: 22px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    #splash .spin {
+      width: 28px; height: 28px; box-sizing: border-box; border-radius: 50%;
+      border: 3px solid rgba(29, 26, 21, .15); border-top-color: #D14B2C;
+      animation: spin .8s linear infinite;
+    }
+    #splash .hint { font-size: 14px; line-height: 1.4; text-align: center; max-width: 280px; min-height: 3em; opacity: 0; transition: opacity .3s ease; }
+    #splash .hint.show { opacity: .7; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { #splash .spin { animation: none; } }
   </style>
 </head>
 <body>
+  <div id="splash" role="status" aria-live="polite">
+    <div class="name">Pickleball</div>
+    <div class="spin" aria-hidden="true"></div>
+    <div class="hint" id="hint">Still loading&hellip; the first open after a quiet spell can take a little longer.</div>
+  </div>
   <!-- This page only exists to show the Apps Script app full-screen, which
        hides Google's "created by a Google Apps Script user" banner (that banner
        is drawn by Google's outer page, not by the app). The app itself lives at
@@ -28,13 +55,52 @@
   <script>
     (function () {
       var APP = 'https://script.google.com/macros/s/AKfycbw04kr81cykbnrm8NBP4Elk2wXqGXE_0oEERvfd8BXEVdWEFoy-GExn-cMvb_uTQO4M/exec';
+      var frame = document.getElementById('app');
+      var splash = document.getElementById('splash');
+      var hint = document.getElementById('hint');
+
       var src = APP;
-      // A link like .../pickleball/?tab=play is handed on to the app as
+      // A link like .../Pickleball/?tab=play is handed on to the app as
       // ...exec?tab=play. Only the tab name is passed, and only the four real
       // ones, so nothing else in the address can reach the app.
       var m = /(?:^\?|&)tab=([a-z]+)(?:&|$)/.exec(location.search || '');
       if (m && ['new', 'play', 'history', 'players'].indexOf(m[1]) !== -1) src += '?tab=' + m[1];
-      document.getElementById('app').src = src;
+      frame.src = src;
+
+      // Takes the loading screen down. The app sends {pickleball: 'ready'} once
+      // it has something on screen (or an error to show). After a while the
+      // screen also goes on its own, so it can never cover a working app for
+      // good -- e.g. if an older version of the app, which doesn't send the
+      // signal, is the one deployed.
+      var gone = false;
+      var hintTimer = setTimeout(function () { hint.classList.add('show'); }, 12000);
+      var giveUpTimer = setTimeout(hideSplash, 40000);
+      function hideSplash() {
+        if (gone) return;
+        gone = true;
+        clearTimeout(hintTimer);
+        clearTimeout(giveUpTimer);
+        splash.classList.add('done');
+        setTimeout(function () { splash.style.display = 'none'; }, 350);
+      }
+
+      // Only a message from inside the app's own frame counts: it must come
+      // from a Google app address (*-script.googleusercontent.com) and from a
+      // window nested inside #app (walks up event.source.parent to that frame).
+      function fromOurApp(ev) {
+        if (!/^https:\/\/[a-z0-9-]+-script\.googleusercontent\.com$/.test(ev.origin)) return false;
+        var w = ev.source;
+        for (var i = 0; w && i < 8; i++) {
+          if (w === frame.contentWindow) return true;
+          if (w === window) return false;
+          try { w = w.parent; } catch (e) { return false; }
+        }
+        return false;
+      }
+      window.addEventListener('message', function (ev) {
+        var d = ev.data;
+        if (d && typeof d === 'object' && d.pickleball === 'ready' && fromOurApp(ev)) hideSplash();
+      });
     })();
   </script>
 </body>
