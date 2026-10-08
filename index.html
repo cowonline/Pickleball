@@ -98,9 +98,33 @@
         }
         return false;
       }
+      // Saved settings (theme, and the scorekeeper's phone id, game in progress
+      // and voice). The app's own storage, inside Google's frame, is wiped when an
+      // iPhone closes the app, so this page -- the real site, whose storage lasts --
+      // keeps them for it: the app asks for them as it starts ("getPrefs") and sends
+      // each change ("setPref"). Only pb-* keys, only from our app's own frame.
+      var PREF_KEY = /^pb-[a-z0-9-]{1,40}$/;
+      function savedPrefs() {
+        var out = {};
+        try {
+          for (var i = 0; i < localStorage.length; i++) {
+            var k = localStorage.key(i);
+            if (PREF_KEY.test(k)) out[k] = localStorage.getItem(k);
+          }
+        } catch (e) { /* storage blocked: the app falls back to its own */ }
+        return out;
+      }
+
       window.addEventListener('message', function (ev) {
         var d = ev.data;
-        if (d && typeof d === 'object' && d.pickleball === 'ready' && fromOurApp(ev)) hideSplash();
+        if (!d || typeof d !== 'object' || !fromOurApp(ev)) return;
+        if (d.pickleball === 'ready') hideSplash();
+        else if (d.pickleball === 'getPrefs') {
+          try { ev.source.postMessage({ pickleball: 'prefs', data: savedPrefs() }, ev.origin); } catch (e) {}
+        } else if (d.pickleball === 'setPref' && typeof d.key === 'string' && PREF_KEY.test(d.key) &&
+                   typeof d.value === 'string' && d.value.length <= 50000) {
+          try { localStorage.setItem(d.key, d.value); } catch (e) {}
+        }
       });
     })();
   </script>
