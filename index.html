@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex">
-  <meta name="theme-color" content="#F3ECDD">
+  <meta name="theme-color" content="#F2F3F5" id="theme-color">
   <!-- Added to the iPhone home screen, this opens as its own app (no Safari bars). -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -12,17 +12,21 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>Pickleball Pairing &amp; Scoring</title>
   <style>
-    html, body { margin: 0; height: 100%; background: #F3ECDD; overscroll-behavior: none; }   /* the app has its own pull to refresh */
+    /* --page / --page-ink follow the theme picked in the app (pb-theme, kept in this
+       page's storage -- see "Saved settings" below), so the strip behind the
+       iPhone's status bar and the loading screen match it (2026-10-09 redesign). */
+    :root { --page: #F2F3F5; --page-ink: #0E1116; }
+    html, body { margin: 0; height: 100%; background: var(--page); overscroll-behavior: none; }   /* the app has its own pull to refresh */
     iframe { display: block; border: 0; width: 100%; height: 100vh; height: 100dvh; }
 
     /* Loading screen: shown over the app until the app says it has something to
        show (Google takes several seconds to start it), so the wait doesn't look
-       like a blank, broken page. Same cream and ink as the app's own look. */
+       like a blank, broken page. Same background and ink as the app's theme. */
     #splash {
       position: fixed; inset: 0; z-index: 2;
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
-      background: #F3ECDD; color: #1D1A15;
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--page); color: var(--page-ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
       transition: opacity .25s ease;
     }
     #splash.done { opacity: 0; pointer-events: none; }
@@ -31,13 +35,26 @@
     #splash .ball .ring { fill: none; stroke: #2B2F36; stroke-width: 2.6; }
     #splash .ball .sh { fill: #fff; }
     #splash .ball .ho { fill: none; stroke: #2B2F36; stroke-width: 2.2; }
-    #splash .name { font-size: 22px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #2B2F36; }
-    #splash .name b { font-weight: 600; color: #9BC400; }
+    #splash .name { font-size: 24px; font-weight: 700; letter-spacing: -.01em; color: var(--page-ink); }
+    #splash .name b { font-weight: 700; }
     #splash .hint { font-size: 14px; line-height: 1.4; text-align: center; max-width: 280px; min-height: 3em; opacity: 0; transition: opacity .3s ease; }
     #splash .hint.show { opacity: .7; }
     @keyframes spin { to { transform: rotate(360deg); } }
     @media (prefers-reduced-motion: reduce) { #splash .ball { animation: none; } }
   </style>
+  <script>
+    // The app's theme colours behind it, painted before anything shows (keys as in
+    // the app's THEMES: baseline = Daylight, night = Floodlight, midnight = Midnight).
+    var PAGE_COLORS = { baseline: ['#F2F3F5', '#0E1116'], night: ['#0A0C0F', '#F2F4F6'], midnight: ['#06122A', '#EEF3FB'] };
+    function paintTheme(key) {
+      var c = PAGE_COLORS[key] || PAGE_COLORS.baseline;
+      document.documentElement.style.setProperty('--page', c[0]);
+      document.documentElement.style.setProperty('--page-ink', c[1]);
+      var meta = document.getElementById('theme-color');
+      if (meta) meta.setAttribute('content', c[0]);
+    }
+    try { paintTheme(localStorage.getItem('pb-theme')); } catch (e) { /* storage blocked: Daylight */ }
+  </script>
 </head>
 <body>
   <div id="splash" role="status" aria-live="polite">
@@ -124,6 +141,7 @@
         } else if (d.pickleball === 'setPref' && typeof d.key === 'string' && PREF_KEY.test(d.key) &&
                    typeof d.value === 'string' && d.value.length <= 50000) {
           try { localStorage.setItem(d.key, d.value); } catch (e) {}
+          if (d.key === 'pb-theme') paintTheme(d.value);
         }
       });
     })();
