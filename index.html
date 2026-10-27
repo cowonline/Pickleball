@@ -11,6 +11,8 @@
   <meta name="apple-mobile-web-app-title" content="Pickleball">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>Pickleball Pairing &amp; Scoring</title>
+  <!-- Start connecting to the app while this page is still loading. -->
+  <link rel="preconnect" href="https://pickleball.cowonline.workers.dev">
   <style>
     /* --page / --page-ink follow the theme picked in the app (pb-theme, kept in this
        page's storage -- see "Saved settings" below), so the strip behind the
@@ -20,8 +22,8 @@
     iframe { display: block; border: 0; width: 100%; height: 100vh; height: 100dvh; }
 
     /* Loading screen: shown over the app until the app says it has something to
-       show (Google takes several seconds to start it), so the wait doesn't look
-       like a blank, broken page. Same background and ink as the app's theme. */
+       show, so a slow connection doesn't look like a blank, broken page. Same
+       background and ink as the app's theme. */
     #splash {
       position: fixed; inset: 0; z-index: 2;
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
@@ -62,24 +64,25 @@
     <div class="name"><b>Pickle</b>ball</div>
     <div class="hint" id="hint">Still loading&hellip; the first open after a quiet spell can take a little longer.</div>
   </div>
-  <!-- This page only exists to show the Apps Script app full-screen, which
-       hides Google's "created by a Google Apps Script user" banner (that banner
-       is drawn by Google's outer page, not by the app). The app itself lives at
-       the address below; if its deployment address ever changes, change it here
-       (and re-paste this file on GitHub). allow= lets the app use the phone's
-       share sheet and the clipboard from inside this frame. -->
+  <!-- This page shows the app full-screen at the address players already have.
+       The app itself runs on Cloudflare at the address below (until 2026-10 it
+       was a Google Apps Script app framed here to hide Google's banner); if that
+       address ever changes, change it here and re-paste this file on GitHub.
+       allow= lets the app use the phone's share sheet and the clipboard from
+       inside this frame. -->
   <iframe id="app" title="Pickleball Pairing &amp; Scoring" allow="clipboard-write; web-share"></iframe>
   <noscript>This app needs JavaScript turned on.</noscript>
   <script>
     (function () {
-      var APP = 'https://script.google.com/macros/s/AKfycbw04kr81cykbnrm8NBP4Elk2wXqGXE_0oEERvfd8BXEVdWEFoy-GExn-cMvb_uTQO4M/exec';
+      var APP_ORIGIN = 'https://pickleball.cowonline.workers.dev';
+      var APP = APP_ORIGIN + '/';
       var frame = document.getElementById('app');
       var splash = document.getElementById('splash');
       var hint = document.getElementById('hint');
 
       var src = APP;
       // A link like .../Pickleball/?tab=play is handed on to the app as
-      // ...exec?tab=play. Only the tab name is passed, and only the four real
+      // .../?tab=play. Only the tab name is passed, and only the four real
       // ones, so nothing else in the address can reach the app.
       var m = /(?:^\?|&)tab=([a-z]+)(?:&|$)/.exec(location.search || '');
       if (m && ['new', 'play', 'history', 'players'].indexOf(m[1]) !== -1) src += '?tab=' + m[1];
@@ -103,10 +106,10 @@
       }
 
       // Only a message from inside the app's own frame counts: it must come
-      // from a Google app address (*-script.googleusercontent.com) and from a
-      // window nested inside #app (walks up event.source.parent to that frame).
+      // from the app's address (APP_ORIGIN) and from a window nested inside
+      // #app (walks up event.source.parent to that frame).
       function fromOurApp(ev) {
-        if (!/^https:\/\/[a-z0-9-]+-script\.googleusercontent\.com$/.test(ev.origin)) return false;
+        if (ev.origin !== APP_ORIGIN) return false;
         var w = ev.source;
         for (var i = 0; w && i < 8; i++) {
           if (w === frame.contentWindow) return true;
@@ -116,7 +119,7 @@
         return false;
       }
       // Saved settings (theme, and the scorekeeper's phone id, game in progress
-      // and voice). The app's own storage, inside Google's frame, is wiped when an
+      // and voice). The app's own storage, inside this frame, is wiped when an
       // iPhone closes the app, so this page -- the real site, whose storage lasts --
       // keeps them for it: the app asks for them as it starts ("getPrefs") and sends
       // each change ("setPref"). Only pb-* keys, only from our app's own frame.
