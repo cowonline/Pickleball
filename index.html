@@ -64,10 +64,14 @@
     <div class="name"><b>Pickle</b>ball</div>
     <div class="hint" id="hint">Still loading&hellip; the first open after a quiet spell can take a little longer.</div>
   </div>
-  <!-- This page shows the app full-screen at the address players already have.
-       The app itself runs on Cloudflare at the address below (until 2026-10 it
-       was a Google Apps Script app framed here to hide Google's banner); if that
-       address ever changes, change it here and re-paste this file on GitHub.
+  <!-- The address players already have. Since 2026-10-27 it simply forwards to the app's
+       own address on Cloudflare (below), handing over this page's saved settings the first
+       time. Only a copy added to the iPhone home screen from THIS address still shows the
+       app inside the frame below (forwarding it would add a Safari bar across the top);
+       re-adding the icon from the app's own address ends that. Until 2026-10 the app was a
+       Google Apps Script app framed here to hide Google's banner. If the address ever
+       changes, change it here and re-paste this file on GitHub. Undo (back to always
+       framing): paste index-framed.html instead.
        allow= lets the app use the phone's share sheet and the clipboard from
        inside this frame. -->
   <iframe id="app" title="Pickleball Pairing &amp; Scoring" allow="clipboard-write; web-share"></iframe>
@@ -86,6 +90,25 @@
       // ones, so nothing else in the address can reach the app.
       var m = /(?:^\?|&)tab=([a-z]+)(?:&|$)/.exec(location.search || '');
       if (m && ['new', 'play', 'history', 'players'].indexOf(m[1]) !== -1) src += '?tab=' + m[1];
+
+      // Opened in the browser (not from a home-screen icon): go straight to the app. The
+      // first time, this page's saved settings go along in the address's #part, which never
+      // leaves the phone; the app takes in any it doesn't have yet and wipes the #part.
+      var PREF_KEY = /^pb-[a-z0-9-]{1,40}$/;
+      var homeScreen = navigator.standalone === true ||
+        (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+      if (!homeScreen) {
+        try {
+          if (!localStorage.getItem('moved-to-app')) {
+            var prefs = savedPrefs();
+            if (JSON.stringify(prefs).length > 8000) delete prefs['pb-sk-games'];   // keep the address short
+            if (Object.keys(prefs).length) src += '#prefs=' + encodeURIComponent(JSON.stringify(prefs));
+            localStorage.setItem('moved-to-app', '1');
+          }
+        } catch (e) { /* storage blocked: nothing to hand over */ }
+        location.replace(src);
+        return;
+      }
       frame.src = src;
 
       // Takes the loading screen down. The app sends {pickleball: 'ready'} once
@@ -122,8 +145,7 @@
       // and voice). The app's own storage, inside this frame, is wiped when an
       // iPhone closes the app, so this page -- the real site, whose storage lasts --
       // keeps them for it: the app asks for them as it starts ("getPrefs") and sends
-      // each change ("setPref"). Only pb-* keys, only from our app's own frame.
-      var PREF_KEY = /^pb-[a-z0-9-]{1,40}$/;
+      // each change ("setPref"). Only pb-* keys (PREF_KEY, above), only from our app's own frame.
       function savedPrefs() {
         var out = {};
         try {
