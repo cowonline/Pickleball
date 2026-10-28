@@ -89,7 +89,7 @@
       // .../?tab=play. Only the tab name is passed, and only the four real
       // ones, so nothing else in the address can reach the app.
       var m = /(?:^\?|&)tab=([a-z]+)(?:&|$)/.exec(location.search || '');
-      if (m && ['new', 'play', 'history', 'players'].indexOf(m[1]) !== -1) src += '?tab=' + m[1];
+      if (m && ['new', 'play', 'history', 'bookings', 'players'].indexOf(m[1]) !== -1) src += '?tab=' + m[1];   // bookings: Share booking's link (2026-10-28)
 
       // Opened in the browser (not from a home-screen icon): go straight to the app. The
       // first time, this page's saved settings go along in the address's #part, which never
