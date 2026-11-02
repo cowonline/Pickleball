@@ -18,8 +18,10 @@
        page's storage -- see "Saved settings" below), so the strip behind the
        iPhone's status bar and the loading screen match it (2026-10-09 redesign). */
     :root { --page: #F2F3F5; --page-ink: #0E1116; }
-    html, body { margin: 0; height: 100%; background: var(--page); overscroll-behavior: none; }   /* the app has its own pull to refresh */
-    iframe { display: block; border: 0; width: 100%; height: 100vh; height: 100dvh; }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: var(--page); overscroll-behavior: none; }   /* the app has its own pull to refresh */
+    /* Pinned to the screen itself, not sized with vh/dvh: on an iPhone home-screen icon those could be
+       taller or shorter than what is really visible, and the app's bottom bars then floated up (2026-11-02). */
+    iframe { position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
 
     /* Loading screen: shown over the app until the app says it has something to
        show, so a slow connection doesn't look like a blank, broken page. Same
