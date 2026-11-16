@@ -5,55 +5,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex">
   <meta name="theme-color" content="#F2F3F5" id="theme-color">
-  <!-- Added to the iPhone home screen, this opens as its own app (no Safari bars). -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Pickleball">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>Pickleball Pairing &amp; Scoring</title>
-  <!-- Start connecting to the app while this page is still loading. -->
   <link rel="preconnect" href="https://pickleball.cowonline.workers.dev">
+  <!-- The OLD players' link. Since 2026-11-16 the app's own address
+       (https://pickleball.cowonline.workers.dev) is the one link everywhere; this page is only a
+       safety net for old links and old home-screen icons:
+       - opened in a browser (old WhatsApp links, printed posters): forwards straight to the app,
+         handing over this page's saved settings the first time (as since 2026-10-27);
+       - opened from a home-screen icon added from THIS address: shows "This icon is out of date"
+         and how to add the new one, instead of the app (such icons can't get booking reminders).
+         Its button carries the saved settings to the new address too.
+       Undo (back to forwarding + showing the app inside this page for old icons): paste
+       index-forward-and-frame.html instead. Older undo copies: index-framed.html, index-google.html. -->
   <style>
-    /* --page / --page-ink follow the theme picked in the app (pb-theme, kept in this
-       page's storage -- see "Saved settings" below), so the strip behind the
-       iPhone's status bar and the loading screen match it (2026-10-09 redesign). */
-    :root { --page: #F2F3F5; --page-ink: #0E1116; }
-    html, body { margin: 0; height: 100%; overflow: hidden; background: var(--page); overscroll-behavior: none; }   /* the app has its own pull to refresh */
-    /* Pinned to the screen itself, not sized with vh/dvh: on an iPhone home-screen icon those could be
-       taller or shorter than what is really visible, and the app's bottom bars then floated up (2026-11-02). */
-    iframe { position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
-
-    /* Loading screen: shown over the app until the app says it has something to
-       show, so a slow connection doesn't look like a blank, broken page. Same
-       background and ink as the app's theme. */
-    #splash {
-      position: fixed; inset: 0; z-index: 2;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
-      background: var(--page); color: var(--page-ink);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
-      transition: opacity .25s ease;
-    }
-    #splash.done { opacity: 0; pointer-events: none; }
-    #splash .ball { width: 132px; height: 132px; filter: drop-shadow(0 0 12px rgba(198, 240, 0, .6)); animation: spin 1.3s linear infinite; }
-    #splash .ball .fill { fill: #C6F000; }
-    #splash .ball .ring { fill: none; stroke: #2B2F36; stroke-width: 2.6; }
-    #splash .ball .sh { fill: #fff; }
-    #splash .ball .ho { fill: none; stroke: #2B2F36; stroke-width: 2.2; }
-    #splash .name { font-size: 24px; font-weight: 700; letter-spacing: -.01em; color: var(--page-ink); }
-    #splash .name b { font-weight: 700; }
-    #splash .hint { font-size: 14px; line-height: 1.4; text-align: center; max-width: 280px; min-height: 3em; opacity: 0; transition: opacity .3s ease; }
-    #splash .hint.show { opacity: .7; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @media (prefers-reduced-motion: reduce) { #splash .ball { animation: none; } }
+    :root { --page: #F2F3F5; --ink: #0E1116; --muted: #5B6470; --card: #FFFFFF; --fill: #EDEFF2; --accent: #0F5C41; --line: rgba(14,17,22,.10); }
+    :root.dark { --muted: #9AA3AE; --card: #171B21; --fill: #232830; --accent: #C6F000; --line: rgba(255,255,255,.10); }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--page); color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    main { max-width: 440px; margin: 0 auto; padding: calc(env(safe-area-inset-top) + 36px) 16px calc(env(safe-area-inset-bottom) + 32px); }
+    .ball { display: block; width: 72px; height: 72px; margin: 0 auto 18px; }
+    .ball .fill { fill: #C6F000; } .ball .ring { fill: none; stroke: #2B2F36; stroke-width: 6; } .ball .ho { fill: none; stroke: #2B2F36; stroke-width: 7; }
+    h1 { margin: 0; text-align: center; font-size: 24px; letter-spacing: -.01em; }
+    .lead { margin: 10px 0 22px; text-align: center; font-size: 16px; line-height: 1.45; color: var(--muted); }
+    .card { background: var(--card); border-radius: 18px; padding: 6px 16px; box-shadow: 0 1px 2px rgba(14,17,22,.04), 0 6px 20px rgba(14,17,22,.05); }
+    ol { margin: 0; padding: 0; list-style: none; counter-reset: s; }
+    li { position: relative; padding: 13px 0 13px 42px; border-top: 1px solid var(--line); font-size: 16px; line-height: 1.4; counter-increment: s; }
+    li:first-child { border-top: 0; }
+    li::before { content: counter(s); position: absolute; left: 0; top: 11px; width: 28px; height: 28px; border-radius: 50%;
+      display: grid; place-items: center; background: var(--fill); font-weight: 700; font-size: 15px; }
+    li svg { width: 18px; height: 18px; vertical-align: -3px; fill: none; stroke: #2E7CF6; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .btn { display: flex; align-items: center; justify-content: center; margin-top: 20px; height: 50px; border-radius: 14px;
+      background: var(--accent); color: #fff; font-size: 17px; font-weight: 700; text-decoration: none; }
+    :root.dark .btn { color: #0E1116; }
+    .addr { margin-top: 14px; text-align: center; font-size: 14px; color: var(--muted); }
+    .addr button { border: 0; background: none; padding: 4px; font: inherit; font-weight: 700; color: var(--accent); cursor: pointer; }
+    [hidden] { display: none !important; }
   </style>
   <script>
-    // The app's theme colours behind it, painted before anything shows (keys as in
-    // the app's THEMES: baseline = Daylight, night = Floodlight, midnight = Midnight).
+    // The app's theme colours, painted before anything shows (keys as in the app's THEMES:
+    // baseline = Daylight, night = Floodlight, midnight = Midnight).
     var PAGE_COLORS = { baseline: ['#F2F3F5', '#0E1116'], night: ['#0A0C0F', '#F2F4F6'], midnight: ['#06122A', '#EEF3FB'] };
     function paintTheme(key) {
       var c = PAGE_COLORS[key] || PAGE_COLORS.baseline;
       document.documentElement.style.setProperty('--page', c[0]);
-      document.documentElement.style.setProperty('--page-ink', c[1]);
+      document.documentElement.style.setProperty('--ink', c[1]);
+      document.documentElement.classList.toggle('dark', key === 'night' || key === 'midnight');
       var meta = document.getElementById('theme-color');
       if (meta) meta.setAttribute('content', c[0]);
     }
@@ -61,93 +62,35 @@
   </script>
 </head>
 <body>
-  <div id="splash" role="status" aria-live="polite">
-    <svg class="ball" viewBox="-100 -100 200 200" aria-hidden="true"><circle class="fill" cx="6" cy="6" r="74"/><g><g transform="translate(-27.6 -59.3)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g><g transform="translate(19.9 -59.3)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g><g transform="translate(-4.1 -31.7)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g><g transform="translate(-62 -23.4)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g><g transform="translate(55.2 -23.4)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g><g transform="translate(-35.9 0)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g><g transform="translate(27.6 0)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g><g transform="translate(-63.4 22)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g><g transform="translate(56.6 22)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g><g transform="translate(-4.1 30.3)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g><g transform="translate(-27.6 59.3)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g><g transform="translate(19.3 59.3)"><ellipse class="sh" cx="6" cy="5" rx="11" ry="9.5"/><ellipse class="ho" rx="11" ry="9.5"/></g></g><circle class="ring" r="80"/></svg>
-    <div class="name"><b>Pickle</b>ball</div>
-    <div class="hint" id="hint">Still loading&hellip; the first open after a quiet spell can take a little longer.</div>
-  </div>
-  <!-- The address players already have. Since 2026-10-27 it simply forwards to the app's
-       own address on Cloudflare (below), handing over this page's saved settings the first
-       time. Only a copy added to the iPhone home screen from THIS address still shows the
-       app inside the frame below (forwarding it would add a Safari bar across the top);
-       re-adding the icon from the app's own address ends that. Until 2026-10 the app was a
-       Google Apps Script app framed here to hide Google's banner. If the address ever
-       changes, change it here and re-paste this file on GitHub. Undo (back to always
-       framing): paste index-framed.html instead.
-       allow= lets the app use the phone's share sheet and the clipboard from
-       inside this frame. -->
-  <iframe id="app" title="Pickleball Pairing &amp; Scoring" allow="clipboard-write; web-share"></iframe>
-  <noscript>This app needs JavaScript turned on.</noscript>
+  <main id="old-icon" hidden>
+    <svg class="ball" viewBox="-100 -100 200 200" aria-hidden="true"><circle class="fill" r="80"/><circle class="ring" r="80"/><g class="ho"><circle cx="-28" cy="-45" r="11"/><circle cx="22" cy="-45" r="11"/><circle cx="-45" cy="0" r="11"/><circle cx="0" cy="-5" r="11"/><circle cx="45" cy="0" r="11"/><circle cx="-24" cy="42" r="11"/><circle cx="24" cy="42" r="11"/></g></svg>
+    <h1>This icon is out of date</h1>
+    <p class="lead">Pickleball has a new address. Swap this icon for the new one to keep using the app.</p>
+    <div class="card">
+      <ol>
+        <li>Tap <b>Open the new address</b> below</li>
+        <li id="step-add-ios">In Safari, tap <svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v8h14v-8"/></svg> <b>Share</b>, then <b>Add to Home Screen</b></li>
+        <li id="step-add-other" hidden>In your browser's menu, tap <b>Add to Home screen</b> (or <b>Install app</b>)</li>
+        <li>Remove this old icon: press and hold it, then tap <b>Remove App</b></li>
+      </ol>
+    </div>
+    <a class="btn" id="open" href="https://pickleball.cowonline.workers.dev/" target="_top" rel="noopener">Open the new address</a>
+    <p class="addr"><span id="addr-text">pickleball.cowonline.workers.dev</span> <button type="button" id="copy">Copy</button></p>
+  </main>
+  <noscript>This app needs JavaScript turned on. Its address is https://pickleball.cowonline.workers.dev</noscript>
   <script>
     (function () {
       var APP_ORIGIN = 'https://pickleball.cowonline.workers.dev';
       var APP = APP_ORIGIN + '/';
-      var frame = document.getElementById('app');
-      var splash = document.getElementById('splash');
-      var hint = document.getElementById('hint');
-
       var src = APP;
-      // A link like .../Pickleball/?tab=play is handed on to the app as
-      // .../?tab=play. Only the tab name is passed, and only the four real
-      // ones, so nothing else in the address can reach the app.
+      // A link like .../Pickleball/?tab=play is handed on to the app as .../?tab=play. Only the
+      // tab name is passed, and only the real ones, so nothing else in the address can reach the app.
       var m = /(?:^\?|&)tab=([a-z]+)(?:&|$)/.exec(location.search || '');
-      if (m && ['new', 'play', 'history', 'bookings', 'players'].indexOf(m[1]) !== -1) src += '?tab=' + m[1];   // bookings: Share booking's link (2026-10-28)
-
-      // Opened in the browser (not from a home-screen icon): go straight to the app. The
-      // first time, this page's saved settings go along in the address's #part, which never
-      // leaves the phone; the app takes in any it doesn't have yet and wipes the #part.
+      if (m && ['new', 'play', 'history', 'bookings', 'players'].indexOf(m[1]) !== -1) src += '?tab=' + m[1];
+      // This page's saved settings (theme, scorekeeper's phone id, game in progress, voice) go along
+      // in the address's #part, which never leaves the phone; the app takes in any it doesn't have
+      // yet and wipes the #part.
       var PREF_KEY = /^pb-[a-z0-9-]{1,40}$/;
-      var homeScreen = navigator.standalone === true ||
-        (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-      if (!homeScreen) {
-        try {
-          if (!localStorage.getItem('moved-to-app')) {
-            var prefs = savedPrefs();
-            if (JSON.stringify(prefs).length > 8000) delete prefs['pb-sk-games'];   // keep the address short
-            if (Object.keys(prefs).length) src += '#prefs=' + encodeURIComponent(JSON.stringify(prefs));
-            localStorage.setItem('moved-to-app', '1');
-          }
-        } catch (e) { /* storage blocked: nothing to hand over */ }
-        location.replace(src);
-        return;
-      }
-      frame.src = src;
-
-      // Takes the loading screen down. The app sends {pickleball: 'ready'} once
-      // it has something on screen (or an error to show). After a while the
-      // screen also goes on its own, so it can never cover a working app for
-      // good -- e.g. if an older version of the app, which doesn't send the
-      // signal, is the one deployed.
-      var gone = false;
-      var hintTimer = setTimeout(function () { hint.classList.add('show'); }, 12000);
-      var giveUpTimer = setTimeout(hideSplash, 40000);
-      function hideSplash() {
-        if (gone) return;
-        gone = true;
-        clearTimeout(hintTimer);
-        clearTimeout(giveUpTimer);
-        splash.classList.add('done');
-        setTimeout(function () { splash.style.display = 'none'; }, 350);
-      }
-
-      // Only a message from inside the app's own frame counts: it must come
-      // from the app's address (APP_ORIGIN) and from a window nested inside
-      // #app (walks up event.source.parent to that frame).
-      function fromOurApp(ev) {
-        if (ev.origin !== APP_ORIGIN) return false;
-        var w = ev.source;
-        for (var i = 0; w && i < 8; i++) {
-          if (w === frame.contentWindow) return true;
-          if (w === window) return false;
-          try { w = w.parent; } catch (e) { return false; }
-        }
-        return false;
-      }
-      // Saved settings (theme, and the scorekeeper's phone id, game in progress
-      // and voice). The app's own storage, inside this frame, is wiped when an
-      // iPhone closes the app, so this page -- the real site, whose storage lasts --
-      // keeps them for it: the app asks for them as it starts ("getPrefs") and sends
-      // each change ("setPref"). Only pb-* keys (PREF_KEY, above), only from our app's own frame.
       function savedPrefs() {
         var out = {};
         try {
@@ -155,22 +98,51 @@
             var k = localStorage.key(i);
             if (PREF_KEY.test(k)) out[k] = localStorage.getItem(k);
           }
-        } catch (e) { /* storage blocked: the app falls back to its own */ }
+        } catch (e) { /* storage blocked: nothing to hand over */ }
         return out;
       }
+      function withPrefs(url) {
+        var prefs = savedPrefs();
+        if (JSON.stringify(prefs).length > 8000) delete prefs['pb-sk-games'];   // keep the address short
+        return Object.keys(prefs).length ? url + '#prefs=' + encodeURIComponent(JSON.stringify(prefs)) : url;
+      }
+      var homeScreen = navigator.standalone === true ||
+        (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
 
-      window.addEventListener('message', function (ev) {
-        var d = ev.data;
-        if (!d || typeof d !== 'object' || !fromOurApp(ev)) return;
-        if (d.pickleball === 'ready') hideSplash();
-        else if (d.pickleball === 'getPrefs') {
-          try { ev.source.postMessage({ pickleball: 'prefs', data: savedPrefs() }, ev.origin); } catch (e) {}
-        } else if (d.pickleball === 'setPref' && typeof d.key === 'string' && PREF_KEY.test(d.key) &&
-                   typeof d.value === 'string' && d.value.length <= 50000) {
-          try { localStorage.setItem(d.key, d.value); } catch (e) {}
-          if (d.key === 'pb-theme') paintTheme(d.value);
-        }
+      // Opened in the browser: go straight to the app (settings handed over the first time only).
+      if (!homeScreen) {
+        try {
+          if (!localStorage.getItem('moved-to-app')) {
+            src = withPrefs(src);
+            localStorage.setItem('moved-to-app', '1');
+          }
+        } catch (e) { /* storage blocked */ }
+        location.replace(src);
+        return;
+      }
+
+      // Opened from an old home-screen icon: say so, and how to add the new one.
+      var ios = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      document.getElementById('old-icon').hidden = false;
+      document.getElementById('step-add-ios').hidden = !ios;
+      document.getElementById('step-add-other').hidden = ios;
+      var open = document.getElementById('open');
+      var target = withPrefs(src);
+      // On iPhone / iPad, x-safari-https:// opens full Safari (iOS 17+), where Add to Home Screen is;
+      // a plain link from a home-screen icon would open a small browser without it.
+      open.href = ios ? target.replace(/^https:/, 'x-safari-https:') : target;
+      document.getElementById('copy').addEventListener('click', function () {
+        var btn = this;
+        var done = function () { btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = 'Copy'; }, 2000); };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(APP).then(done, function () { selectAddr(); });
+        } else selectAddr();
       });
+      function selectAddr() {
+        var r = document.createRange(); r.selectNodeContents(document.getElementById('addr-text'));
+        var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      }
     })();
   </script>
 </body>
